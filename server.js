@@ -1,5 +1,5 @@
 // =========================================================================
-// SERVEUR PASSERELLE INTERNET AVEC IA PREDICTIVE : GAZ BUTANE 12.5 KG (CORRIGE)
+// SERVEUR PASSERELLE INTERNET SECURISE : GAZ BUTANE 12.5 KG
 // =========================================================================
 
 const express = require('express');
@@ -9,19 +9,25 @@ const port = 3000;
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Variables de stockage et d'historique pour l'IA
+// Variable de stockage pour la bouteille
 let etatBouteille = {
     poids: 12.5,
     pourcentage: 100.0,
     batterie: 3.3,
     alerte: false,
-    joursRestantsEstimes: "Calcul en cours..." // Nouvelle donnee IA
+    joursRestantsEstimes: "Calcul en cours..."
 };
 
-let historiqueMesures = []; // Stocke l'historique pour analyser la tendance
+let historiqueMesures = [];
 
-// --- ROUTE 1 : RECEVOIR LES DONNEES DE L'ESP32 ---
+// --- ROUTE 1 : RECEVOIR LES DONNEES (Sécurisée par Clé API) ---
 app.post('/api/gaz', (req, res) => {
+    // VERIFICATION DE SECURITE INTERNET
+    const cleSecurite = req.headers['x-api-key'];
+    if (cleSecurite !== "MonSecretCameroun2026") {
+        return res.status(401).send({ error: "Acces refuse ! Cle de securite invalide." });
+    }
+
     const donnees = req.body;
     const tempsActuel = Date.now();
     
@@ -30,23 +36,18 @@ app.post('/api/gaz', (req, res) => {
     etatBouteille.batterie = donnees.batterie;
     etatBouteille.alerte = (donnees.poids < 2.0);
 
-    // --- ALGORITHME D'IA (REGRESSION LINEAIRE DE TENDANCE) ---
     historiqueMesures.push({ poids: donnees.poids, temps: tempsActuel });
-    
-    // On garde uniquement les 10 dernieres mesures pour l'analyse de tendance recente
     if (historiqueMesures.length > 10) historiqueMesures.shift();
 
     if (historiqueMesures.length >= 2) {
-        const premiere = historiqueMesures[0]; // Correction ici pour cibler le premier element
+        const premiere = historiqueMesures[0];
         const derniere = historiqueMesures[historiqueMesures.length - 1];
         
-        // Calcul de la vitesse de consommation (delta poids / delta temps)
         const deltaPoids = premiere.poids - derniere.poids;
-        const deltaTempsJours = (derniere.temps - premiere.temps) / (1000 * 60 * 60 * 24); // conversion en jours
+        const deltaTempsJours = (derniere.temps - premiere.temps) / (1000 * 60 * 60 * 24);
 
         if (deltaPoids > 0 && deltaTempsJours > 0) {
             const vitesseConsommationParJour = deltaPoids / deltaTempsJours;
-            // IA : Estimation du nombre de jours restants avant d'atteindre 0kg (Mot corrige sans accent)
             const joursCalcules = derniere.poids / vitesseConsommationParJour;
             etatBouteille.joursRestantsEstimes = Math.round(joursCalcules) + " jours restants";
         } else {
@@ -54,16 +55,15 @@ app.post('/api/gaz', (req, res) => {
         }
     }
 
-    console.log(`[ESP32] Poids: ${donnees.poids} kg | IA Prediction: ${etatBouteille.joursRestantsEstimes}`);
-    res.status(200).send({ message: "Donnees traitees par l'IA du serveur !" });
+    console.log(`[ESP32] Donnees securisees reçues -> Poids: ${donnees.poids} kg`);
+    res.status(200).send({ message: "Donnees traitees en toute securite par le serveur !" });
 });
 
 // --- ROUTE 2 : TRANSMETTRE LES DONNEES A L'APPLICATION ---
-getRoute = app.get('/api/status', (req, res) => {
+app.get('/api/status', (req, res) => {
     res.json(etatBouteille);
 });
 
 app.listen(port, () => {
-    console.log("=== SERVEUR GAZ + IA DEMARRE SUR LE PORT 3000 ===");
-    console.log("Pret a ecouter la bouteille de 12.5 kg...");
+    console.log("=== SERVEUR GAZ SECURISE DEMARRE SUR LE PORT 3000 ===");
 });
