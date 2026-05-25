@@ -20,14 +20,13 @@ let etatBouteille = {
 
 let historiqueMesures = [];
 
-// --- ROUTE 1 : RECEVOIR LES DONNEES (Sécurisée par Clé API) ---
-app.post('/api/gaz', (req, res) => {
-    // VERIFICATION DE SECURITE INTERNET
+    // VERIFICATION DE SECURITE INTERNET (ESP32 ou Page Web)
     const cleSecurite = req.headers['x-api-key'];
-    if (cleSecurite !== "MonSecretCameroun2026") {
+    const estRequeteInterne = req.headers['referer'] && req.headers['referer'].includes(req.headers['host']);
+
+       if (cleSecurite !== "MonSecretCameroun2026" && !estRequeteInterne) {
         return res.status(401).send({ error: "Acces refuse ! Cle de securite invalide." });
     }
-
     const donnees = req.body;
     const tempsActuel = Date.now();
     
