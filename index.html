@@ -73,7 +73,7 @@
 <script>
 async function simulerGaz(poidsSimule, pourcentageSimule) {
     try {
-        // 1. On envoie une mesure un peu plus haute pour créer un historique
+        // 1. On envoie une mesure un peu plus haute pour créer un historique pour l'IA
         let poidsPrecedent = poidsSimule + 2.0; 
         let pourcentagePrecedent = pourcentageSimule + 15;
         
@@ -90,13 +90,27 @@ async function simulerGaz(poidsSimule, pourcentageSimule) {
                 headers: { 'Content-Type': 'application/json', 'x-api-key': 'MonSecretCameroun2026' },
                 body: JSON.stringify({ poids: poidsSimule, pourcentage: pourcentageSimule, batterie: 3.3 })
             });
-            alert("Simulation reussie ! Poids actuel : " + poidsSimule + " kg");
+
+            // 3. CODE DE L'ALERTE VOCALE POUR L'ORDINATEUR (Si niveau critique)
+            if (poidsSimule < 2.0) {
+                // On prépare le message vocal de l'ordinateur
+                let messageVocal = new SpeechSynthesisUtterance("Attention. Le niveau de gaz de votre bouteille de 12,5 kg est critique. Veuillez procéder à la recharge.");
+                messageVocal.lang = 'fr-FR'; // On force la voix en français
+                messageVocal.rate = 1.0;     // Vitesse normale de la parole
+                
+                // L'ordinateur parle !
+                window.speechSynthesis.speak(messageVocal);
+            } else {
+                alert("Simulation réussie ! Poids actuel : " + poidsSimule + " kg");
+            }
+
         }, 1000);
 
     } catch (erreur) {
         alert("Erreur lors de la simulation");
     }
 }
+
 
 </script>
 
