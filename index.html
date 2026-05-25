@@ -77,7 +77,8 @@ async function simulerGaz(poidsSimule, pourcentageSimule) {
         let poidsPrecedent = poidsSimule + 2.0; 
         let pourcentagePrecedent = pourcentageSimule + 15;
         
-        await fetch('/api/gaz', {
+    await fetch('https://onrender.com', {
+
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-api-key': 'MonSecretCameroun2026' },
             body: JSON.stringify({ poids: poidsPrecedent, pourcentage: pourcentagePrecedent, batterie: 3.3 })
