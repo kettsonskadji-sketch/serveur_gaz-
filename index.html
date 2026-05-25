@@ -2,118 +2,71 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Application Gaz 12.5 kg</title>
+    <title>KADJI SMARTGAZ TRACKER - Administration Web</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f3; text-align: center; margin: 0; padding: 20px; }
-        .card { background: white; max-width: 400px; margin: 40px auto; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; font-size: 24px; }
-        .jauge-container { position: relative; width: 150px; height: 150px; background: #dfe6e9; border-radius: 50%; margin: 20px auto; display: flex; align-items: center; justify-content: center; border: 5px solid #b2bec3; }
-        .jauge-valeur { font-size: 32px; font-weight: bold; color: #2ecc71; }
-        .info-poids { font-size: 18px; color: #636e72; margin-top: 15px; }
-        .status-alerte { background: #ff7675; color: white; padding: 10px; border-radius: 10px; font-weight: bold; margin-top: 20px; display: none; animation: clignote 1s infinite; }
-        @keyframes clignote { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f5f6fa; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; max-width: 500px; margin: 20px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; }
+        button { color: white; border: none; padding: 12px 20px; margin: 8px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .btn-vert { background-color: #2ecc71; }
+        .btn-orange { background-color: #e67e22; }
+        .btn-rouge { background-color: #e74c3c; }
     </style>
-</head>  
+</head>
 <body>
 
     <div class="card">
-        <h1>Suivi Bouteille de Gaz (12.5 kg)</h1>
+        <h1>🔥 KADJI SMARTGAZ TRACKER</h1>
+        <p>Interface d'administration et de simulation Cloud</p>
         
-        <div class="jauge-container">
-            <div id="pourcentage" class="jauge-valeur">100%</div>
-        </div>
-
-        <div class="info-poids">Gaz restant : <strong id="poids">12.5</strong> kg</div>
-        <div class="info-poids">Batterie Module : <strong id="batterie">3.3</strong> V</div>
-        <div class="info-poids" style="color: #2980b9;">💡 Pr&eacute;diction IA : <strong id="ia_prediction">Analyse en cours...</strong></div>
-
+        <hr>
         
-        <div id="zoneAlerte" class="status-alerte">⚠️ ALERTE : BOUTEILLE PRESQUE VIDE ! ⚠️</div>
+        <h3>🔧 Simulateur de Niveau de Gaz (Sans ESP32)</h3>
+        <button class="btn-vert" onclick="simulerGaz(12.5, 100)">🟢 Bouteille Pleine (12.5 kg)</button>
+        <button class="btn-orange" onclick="simulerGaz(6.5, 52)">🟠 Bouteille Moyenne (6.5 kg)</button>
+        <button class="btn-rouge" onclick="simulerGaz(1.5, 12)">🔴 Niveau Critique (1.5 kg)</button>
     </div>
 
     <script>
-        // Fonction magique qui demande automatiquement les données au serveur toutes les 2 secondes
-        async function rafraichirDonnees() {
-            try {
-                const reponse = await fetch('/api/status');
-                const données = await reponse.json();
-                
-                // Mise à jour de l'affichage
-                document.getElementById('pourcentage').innerText = données.pourcentage + "%";
-                document.getElementById('poids').innerText = données.poids;
-                document.getElementById('batterie').innerText = données.batterie;
-                document.getElementById('ia_prediction').innerText = données.joursRestantsEstimes;
+    async function simulerGaz(poidsSimule, pourcentageSimule) {
+        const URL_SERVEUR = "https://onrender.com";
+        const CLE_API = "MonSecretCameroun2026";
 
-                // Gestion visuelle de l'alerte
-                const alerteBox = document.getElementById('zoneAlerte');
-                if (données.alerte) {
-                    alerteBox.style.display = 'block';
-                    document.getElementById('pourcentage').style.color = '#e74c3c'; // Rouge si vide
-                } else {
-                    alerteBox.style.display = 'none';
-                    document.getElementById('pourcentage').style.color = '#2ecc71'; // Vert si OK
-                }
-            } catch (erreur) {
-                console.log("Attente des donnees de la bouteille...");
-            }
-        }
-
-        // Relancer la fonction toutes les 2000 millisecondes (2 secondes)
-        setInterval(rafraichirDonnees, 2000);
-    </script>
-    <!-- ZONE DE SIMULATION SECRÈTE POUR LA SOUTENANCE -->
-<div style="margin-top: 30px; padding: 15px; background: #dfe6e9; border-radius: 10px; max-width: 400px; margin-left: auto; margin-right: auto;">
-    <h3 style="color: #2c3e50; margin-top: 0;">🔧 Simulateur de Bouteille (Sans ESP32)</h3>
-    <button onclick="simulerGaz(12.5, 100)" style="background: #2ecc71; color: white; border: none; padding: 10px; margin: 5px; border-radius: 5px; cursor: pointer; font-weight: bold;">Pleine (12.5 kg)</button>
-    <button onclick="simulerGaz(6.5, 52)" style="background: #e67e22; color: white; border: none; padding: 10px; margin: 5px; border-radius: 5px; cursor: pointer; font-weight: bold;">Moyenne (6.5 kg)</button>
-    <button onclick="simulerGaz(1.5, 12)" style="background: #e74c3c; color: white; border: none; padding: 10px; margin: 5px; border-radius: 5px; cursor: pointer; font-weight: bold;">Critique (1.5 kg)</button>
-</div>
-
-<script>
-async function simulerGaz(poidsSimule, pourcentageSimule) {
-    try {
-        // 1. On envoie une mesure un peu plus haute pour créer un historique pour l'IA
-        let poidsPrecedent = poidsSimule + 2.0; 
-        let pourcentagePrecedent = pourcentageSimule + 15;
-        
-    await fetch('https://onrender.com', {
-
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-api-key': 'MonSecretCameroun2026' },
-            body: JSON.stringify({ poids: poidsPrecedent, pourcentage: pourcentagePrecedent, batterie: 3.3 })
-        });
-
-        // 2. On attend 1 seconde et on envoie la vraie mesure simulée pour que l'IA calcule la chute
-        setTimeout(async () => {
-            await fetch('/api/gaz', {
+        try {
+            // Étape 1 : Simulation du point précédent pour l'IA
+            await fetch(URL_SERVEUR, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-api-key': 'MonSecretCameroun2026' },
-                body: JSON.stringify({ poids: poidsSimule, pourcentage: pourcentageSimule, batterie: 3.3 })
+                headers: { 'Content-Type': 'application/json', 'x-api-key': CLE_API },
+                body: JSON.stringify({ poids: poidsSimule + 2.0, pourcentage: pourcentageSimule + 15, batterie: 3.3 })
             });
 
-            // 3. CODE DE L'ALERTE VOCALE POUR L'ORDINATEUR (Si niveau critique)
-            if (poidsSimule < 2.0) {
-                // On prépare le message vocal de l'ordinateur
-                let messageVocal = new SpeechSynthesisUtterance("Attention. Le niveau de gaz de votre bouteille de 12,5 kg est critique. Veuillez procéder à la recharge.");
-                messageVocal.lang = 'fr-FR'; // On force la voix en français
-                messageVocal.rate = 1.0;     // Vitesse normale de la parole
-                
-                // L'ordinateur parle !
-                window.speechSynthesis.speak(messageVocal);
-            } else {
-                alert("Simulation réussie ! Poids actuel : " + poidsSimule + " kg");
-            }
+            // Étape 2 : Simulation du point actuel après 500ms
+            setTimeout(async () => {
+                const reponse = await fetch(URL_SERVEUR, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-api-key': CLE_API },
+                    body: JSON.stringify({ poids: poidsSimule, pourcentage: pourcentageSimule, batterie: 3.3 })
+                });
 
-        }, 1000);
+                if (reponse.ok) {
+                    alert("✅ Données envoyées au Cloud ! Poids : " + poidsSimule + " kg");
+                    
+                    // Si niveau critique, l'ordinateur parle
+                    if (poidsSimule < 2.0) {
+                        let voix = new SpeechSynthesisUtterance("Attention. Le niveau de gaz de votre bouteille de 12,5 kg est critique. Veuillez procéder à la recharge.");
+                        voix.lang = 'fr-FR';
+                        window.speechSynthesis.speak(voix);
+                    }
+                } else {
+                    alert("❌ Le serveur a rejeté la simulation. Statut : " + reponse.status);
+                }
+            }, 500);
 
-    } catch (erreur) {
-        alert("Erreur lors de la simulation");
+        } catch (erreur) {
+            alert("❌ Erreur réseau : impossible de joindre le serveur Render.");
+            console.error(erreur);
+        }
     }
-}
-
-
-</script>
-
+    </script>
 </body>
 </html>
