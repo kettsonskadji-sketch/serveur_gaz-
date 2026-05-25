@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Application Gaz 12.5 kg</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f3; text-align: center; margin: 0; padding: 20px; }
+        .card { background: white; max-width: 400px; margin: 40px auto; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; font-size: 24px; }
+        .jauge-container { position: relative; width: 150px; height: 150px; background: #dfe6e9; border-radius: 50%; margin: 20px auto; display: flex; align-items: center; justify-content: center; border: 5px solid #b2bec3; }
+        .jauge-valeur { font-size: 32px; font-weight: bold; color: #2ecc71; }
+        .info-poids { font-size: 18px; color: #636e72; margin-top: 15px; }
+        .status-alerte { background: #ff7675; color: white; padding: 10px; border-radius: 10px; font-weight: bold; margin-top: 20px; display: none; animation: clignote 1s infinite; }
+        @keyframes clignote { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Suivi Bouteille de Gaz (12.5 kg)</h1>
+        
+        <div class="jauge-container">
+            <div id="pourcentage" class="jauge-valeur">100%</div>
+        </div>
+
+        <div class="info-poids">Gaz restant : <strong id="poids">12.5</strong> kg</div>
+        <div class="info-poids">Batterie Module : <strong id="batterie">3.3</strong> V</div>
+        <div class="info-poids" style="color: #2980b9;">💡 Pr&eacute;diction IA : <strong id="ia_prediction">Analyse en cours...</strong></div>
+
+        
+        <div id="zoneAlerte" class="status-alerte">⚠️ ALERTE : BOUTEILLE PRESQUE VIDE ! ⚠️</div>
+    </div>
+
+    <script>
+        // Fonction magique qui demande automatiquement les données au serveur toutes les 2 secondes
+        async function rafraichirDonnees() {
+            try {
+                const reponse = await fetch('/api/status');
+                const données = await reponse.json();
+                
+                // Mise à jour de l'affichage
+                document.getElementById('pourcentage').innerText = données.pourcentage + "%";
+                document.getElementById('poids').innerText = données.poids;
+                document.getElementById('batterie').innerText = données.batterie;
+                document.getElementById('ia_prediction').innerText = données.joursRestantsEstimes;
+
+                // Gestion visuelle de l'alerte
+                const alerteBox = document.getElementById('zoneAlerte');
+                if (données.alerte) {
+                    alerteBox.style.display = 'block';
+                    document.getElementById('pourcentage').style.color = '#e74c3c'; // Rouge si vide
+                } else {
+                    alerteBox.style.display = 'none';
+                    document.getElementById('pourcentage').style.color = '#2ecc71'; // Vert si OK
+                }
+            } catch (erreur) {
+                console.log("Attente des donnees de la bouteille...");
+            }
+        }
+
+        // Relancer la fonction toutes les 2000 millisecondes (2 secondes)
+        setInterval(rafraichirDonnees, 2000);
+    </script>
+</body>
+</html>
