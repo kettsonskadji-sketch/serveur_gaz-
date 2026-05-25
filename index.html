@@ -73,23 +73,31 @@
 <script>
 async function simulerGaz(poidsSimule, pourcentageSimule) {
     try {
+        // 1. On envoie une mesure un peu plus haute pour créer un historique
+        let poidsPrecedent = poidsSimule + 2.0; 
+        let pourcentagePrecedent = pourcentageSimule + 15;
+        
         await fetch('/api/gaz', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': 'MonSecretCameroun2026' // Notre clé de sécurité
-            },
-            body: JSON.stringify({
-                poids: poidsSimule,
-                pourcentage: pourcentageSimule,
-                batterie: 3.3
-            })
+            headers: { 'Content-Type': 'application/json', 'x-api-key': 'MonSecretCameroun2026' },
+            body: JSON.stringify({ poids: poidsPrecedent, pourcentage: pourcentagePrecedent, batterie: 3.3 })
         });
-        alert("Simulation envoyée ! Poids : " + poidsSimule + " kg");
+
+        // 2. On attend 1 seconde et on envoie la vraie mesure simulée pour que l'IA calcule la chute
+        setTimeout(async () => {
+            await fetch('/api/gaz', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': 'MonSecretCameroun2026' },
+                body: JSON.stringify({ poids: poidsSimule, pourcentage: pourcentageSimule, batterie: 3.3 })
+            });
+            alert("Simulation reussie ! Poids actuel : " + poidsSimule + " kg");
+        }, 1000);
+
     } catch (erreur) {
-        alert("Erreur de simulation");
+        alert("Erreur lors de la simulation");
     }
 }
+
 </script>
 
 </body>
