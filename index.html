@@ -13,7 +13,7 @@
         .btn-orange { background-color: #e1b12c; }
         .btn-rouge { background-color: #e84118; }
         button:hover { transform: scale(1.03); opacity: 0.9; }
-        .alert-flash { animation: clignotement 1s infinite; color: #e84118; font-weight: bold; display: none; }
+        .alert-flash { animation: clignotement 1s infinite; color: #e84118; font-weight: bold; display: none; margin: 15px 0; font-size: 18px; }
         @keyframes clignotement { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
@@ -63,7 +63,7 @@
                 if (poids < 2.0) {
                     document.getElementById('web-poids').style.color = "#e84118";
                     document.getElementById('web-pourcent').style.color = "#e84118";
-                    document.getElementById('alerte-visuelle').style.style.display = "block";
+                    document.getElementById('alerte-visuelle').style.display = "block";
                     
                     // PAROLE DE L'ORDINATEUR (Uniquement si l'utilisateur a cliqué sur la page)
                     if (audioAutorise) {
@@ -96,4 +96,5 @@
     </script>
 </body>
 </html>
+
 
