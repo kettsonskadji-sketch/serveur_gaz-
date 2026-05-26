@@ -2,71 +2,98 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>KADJI SMARTGAZ TRACKER - Administration Web</title>
+    <title>KADJI SMARTGAZ TRACKER - Simulation Cloud</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f5f6fa; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 10px; max-width: 500px; margin: 20px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; }
-        button { color: white; border: none; padding: 12px 20px; margin: 8px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; }
-        .btn-vert { background-color: #2ecc71; }
-        .btn-orange { background-color: #e67e22; }
-        .btn-rouge { background-color: #e74c3c; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; background-color: #1e272e; color: white; padding: 20px; }
+        .card { background: #2f3640; padding: 30px; border-radius: 15px; max-width: 500px; margin: 40px auto; box-shadow: 0 10px 20px rgba(0,0,0,0.3); border: 2px solid #3f4652; }
+        h1 { color: #00a8ff; margin-bottom: 5px; }
+        .status-box { background: #1e272e; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 18px; border-left: 5px solid #00a8ff; text-align: left; }
+        button { color: white; border: none; padding: 14px 25px; margin: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; width: 80%; }
+        .btn-vert { background-color: #4cd137; }
+        .btn-orange { background-color: #e1b12c; }
+        .btn-rouge { background-color: #e84118; }
+        button:hover { transform: scale(1.03); opacity: 0.9; }
+        .alert-flash { animation: clignotement 1s infinite; color: #e84118; font-weight: bold; display: none; }
+        @keyframes clignotement { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h1>🔥 KADJI SMARTGAZ TRACKER</h1>
-        <p>Interface d'administration et de simulation Cloud</p>
+        <p style="color: #dcdde1; margin-top: 0;">Système d'Administration IoT Mondial</p>
         
-        <hr>
+        <!-- Zone d'affichage en direct sur le Web -->
+        <div class="status-box">
+            📊 Poids actuel : <span id="web-poids" style="font-weight: bold; color: #4cd137;">12.5 kg</span><br>
+            📈 Niveau : <span id="web-pourcent" style="font-weight: bold; color: #4cd137;">100%</span><br>
+            🤖 IA Perspective : <span id="web-ia" style="font-weight: bold; color: #00a8ff;">Analyse en cours...</span>
+        </div>
+
+        <div id="alerte-visuelle" class="alert-flash">⚠️ ALERTE : NIVEAU DE GAZ CRITIQUE !</div>
+        <hr style="border: 1px solid #3f4652; margin: 25px 0;">
         
-        <h3>🔧 Simulateur de Niveau de Gaz (Sans ESP32)</h3>
-        <button class="btn-vert" onclick="simulerGaz(12.5, 100)">🟢 Bouteille Pleine (12.5 kg)</button>
-        <button class="btn-orange" onclick="simulerGaz(6.5, 52)">🟠 Bouteille Moyenne (6.5 kg)</button>
-        <button class="btn-rouge" onclick="simulerGaz(1.5, 12)">🔴 Niveau Critique (1.5 kg)</button>
+        <h3>🔧 Panneau de Simulation (Sans ESP32)</h3>
+        <p style="font-size: 12px; color: #fbc531;">👉 Cliquez n'importe où sur la page d'abord pour activer le son de l'ordinateur.</p>
+        
+        <button class="btn-vert" onclick="envoyerSimulation(12.5, 100)">🟢 Simuler Bouteille Pleine (12.5 kg)</button>
+        <button class="btn-orange" onclick="envoyerSimulation(6.5, 52)">🟠 Simuler Consommation (6.5 kg)</button>
+        <button class="btn-rouge" onclick="envoyerSimulation(1.5, 12)">🔴 Simuler Alerte Critique (1.5 kg)</button>
     </div>
 
     <script>
-    async function simulerGaz(poidsSimule, pourcentageSimule) {
-        const URL_SERVEUR = "https://onrender.com";
-        const CLE_API = "MonSecretCameroun2026";
+    // Activation obligatoire des droits audio de Google Chrome
+    let audioAutorise = false;
+    document.body.onclick = () => { audioAutorise = true; };
 
+    async function envoyerSimulation(poids, pourcentage) {
         try {
-            // Étape 1 : Simulation du point précédent pour l'IA
-            await fetch(URL_SERVEUR, {
+            // Envoi des données en adresse relative (évite les blocages de sécurité)
+            const reponse = await fetch('/api/gaz', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-api-key': CLE_API },
-                body: JSON.stringify({ poids: poidsSimule + 2.0, pourcentage: pourcentageSimule + 15, batterie: 3.3 })
+                headers: { 'Content-Type': 'application/json', 'x-api-key': 'MonSecretCameroun2026' },
+                body: JSON.stringify({ poids: poids, pourcentage: pourcentage, batterie: 3.3 })
             });
 
-            // Étape 2 : Simulation du point actuel après 500ms
-            setTimeout(async () => {
-                const reponse = await fetch(URL_SERVEUR, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-api-key': CLE_API },
-                    body: JSON.stringify({ poids: poidsSimule, pourcentage: pourcentageSimule, batterie: 3.3 })
-                });
-
-                if (reponse.ok) {
-                    alert("✅ Données envoyées au Cloud ! Poids : " + poidsSimule + " kg");
+            if (reponse.ok) {
+                // Rafraîchir instantanément l'affichage web graphique
+                document.getElementById('web-poids').innerText = poids + " kg";
+                document.getElementById('web-pourcent').innerText = pourcentage + "%";
+                
+                if (poids < 2.0) {
+                    document.getElementById('web-poids').style.color = "#e84118";
+                    document.getElementById('web-pourcent').style.color = "#e84118";
+                    document.getElementById('alerte-visuelle').style.style.display = "block";
                     
-                    // Si niveau critique, l'ordinateur parle
-                    if (poidsSimule < 2.0) {
-                        let voix = new SpeechSynthesisUtterance("Attention. Le niveau de gaz de votre bouteille de 12,5 kg est critique. Veuillez procéder à la recharge.");
-                        voix.lang = 'fr-FR';
-                        window.speechSynthesis.speak(voix);
+                    // PAROLE DE L'ORDINATEUR (Uniquement si l'utilisateur a cliqué sur la page)
+                    if (audioAutorise) {
+                        window.speechSynthesis.cancel(); // Coupe les anciennes paroles
+                        let alerteVocale = new SpeechSynthesisUtterance("Attention. Le niveau de gaz de votre bouteille de douze virgule cinq kilos est critique. Veuillez procéder à la recharge.");
+                        alerteVocale.lang = 'fr-FR';
+                        window.speechSynthesis.speak(alerteVocale);
                     }
                 } else {
-                    alert("❌ Le serveur a rejeté la simulation. Statut : " + reponse.status);
+                    document.getElementById('web-poids').style.color = "#4cd137";
+                    document.getElementById('web-pourcent').style.color = "#4cd137";
+                    document.getElementById('alerte-visuelle').style.display = "none";
                 }
-            }, 500);
-
-        } catch (erreur) {
-            alert("❌ Erreur réseau : impossible de joindre le serveur Render.");
-            console.error(erreur);
+                
+                // Forcer la lecture de la prédiction de l'IA immédiatement
+                setTimeout(recupererIA, 500);
+            }
+        } catch (err) {
+            console.error("Erreur synchro:", err);
         }
+    }
+
+    async function recupererIA() {
+        try {
+            const res = await fetch('/api/status');
+            const data = await res.json();
+            document.getElementById('web-ia').innerText = data.joursRestantsEstimes;
+        } catch (e) {}
     }
     </script>
 </body>
 </html>
+
