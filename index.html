@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -12,6 +12,7 @@
         .btn-vert { background-color: #4cd137; }
         .btn-orange { background-color: #e1b12c; }
         .btn-rouge { background-color: #e84118; }
+        .btn-stop { background-color: #718093; display: none; margin-top: 15px; border: 2px solid #dcdde1; }
         button:hover { transform: scale(1.03); opacity: 0.9; }
         .alert-flash { animation: clignotement 1s infinite; color: #e84118; font-weight: bold; display: none; margin: 15px 0; font-size: 18px; }
         @keyframes clignotement { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
@@ -31,6 +32,10 @@
         </div>
 
         <div id="alerte-visuelle" class="alert-flash">⚠️ ALERTE : NIVEAU DE GAZ CRITIQUE !</div>
+        
+        <!-- Bouton secret de coupure de l'alarme ordinateur -->
+        <button id="btn-couper-son" class="btn-stop" onclick="couperAlarmeVocalWeb()">🛑 ARRETER L'ALARME ORDINATEUR</button>
+        
         <hr style="border: 1px solid #3f4652; margin: 25px 0;">
         
         <h3>🔧 Panneau de Simulation (Sans ESP32)</h3>
@@ -42,13 +47,32 @@
     </div>
 
     <script>
-    // Activation obligatoire des droits audio de Google Chrome
     let audioAutorise = false;
+    let minuteurVocal = null; // Contiendra le gestionnaire de répétition
+    
+    // Activation obligatoire des droits audio de Google Chrome au premier clic
     document.body.onclick = () => { audioAutorise = true; };
+
+    function prononcerAlerte() {
+        if (audioAutorise) {
+            window.speechSynthesis.cancel(); // Stoppe la parole en cours pour éviter les chevauchements
+            let alerteVocale = new SpeechSynthesisUtterance("Attention. Le niveau de gaz de votre bouteille de douze virgule cinq kilos est critique. Veuillez procéder à la recharge.");
+            alerteVocale.lang = 'fr-FR';
+            window.speechSynthesis.speak(alerteVocale);
+        }
+    }
+
+    function couperAlarmeVocalWeb() {
+        if (minuteurVocal) {
+            clearInterval(minuteurVocal); // Arrête le compte à rebours de répétition
+            minuteurVocal = null;
+        }
+        window.speechSynthesis.cancel(); // Coupe le son instantanément
+        document.getElementById('btn-couper-son').style.display = "none"; // Cache le bouton d'arrêt
+    }
 
     async function envoyerSimulation(poids, pourcentage) {
         try {
-            // Envoi des données en adresse relative (évite les blocages de sécurité)
             const reponse = await fetch('/api/gaz', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-api-key': 'MonSecretCameroun2026' },
@@ -56,7 +80,6 @@
             });
 
             if (reponse.ok) {
-                // Rafraîchir instantanément l'affichage web graphique
                 document.getElementById('web-poids').innerText = poids + " kg";
                 document.getElementById('web-pourcent').innerText = pourcentage + "%";
                 
@@ -64,21 +87,21 @@
                     document.getElementById('web-poids').style.color = "#e84118";
                     document.getElementById('web-pourcent').style.color = "#e84118";
                     document.getElementById('alerte-visuelle').style.display = "block";
+                    document.getElementById('btn-couper-son').style.display = "inline-block"; // Affiche le bouton d'arrêt
                     
-                    // PAROLE DE L'ORDINATEUR (Uniquement si l'utilisateur a cliqué sur la page)
-                    if (audioAutorise) {
-                        window.speechSynthesis.cancel(); // Coupe les anciennes paroles
-                        let alerteVocale = new SpeechSynthesisUtterance("Attention. Le niveau de gaz de votre bouteille de douze virgule cinq kilos est critique. Veuillez procéder à la recharge.");
-                        alerteVocale.lang = 'fr-FR';
-                        window.speechSynthesis.speak(alerteVocale);
+                    // PROGRAMMATION DU COMPTE À REBOURS DE RÉPÉTITION (Toutes les 5 secondes)
+                    if (!minuteurVocal) {
+                        prononcerAlerte(); // Parle immédiatement la première fois
+                        minuteurVocal = setInterval(prononcerAlerte, 5000); // Répète toutes les 5000 millisecondes (5 secondes)
                     }
                 } else {
+                    // Si on remet du gaz, on nettoie tout l'historique d'alarme
                     document.getElementById('web-poids').style.color = "#4cd137";
                     document.getElementById('web-pourcent').style.color = "#4cd137";
                     document.getElementById('alerte-visuelle').style.display = "none";
+                    couperAlarmeVocalWeb();
                 }
                 
-                // Forcer la lecture de la prédiction de l'IA immédiatement
                 setTimeout(recupererIA, 500);
             }
         } catch (err) {
@@ -96,5 +119,6 @@
     </script>
 </body>
 </html>
+
 
 
